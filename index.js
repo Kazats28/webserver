@@ -19,7 +19,7 @@ app.use("/booking", bookingRoute);
 app.use("/favorite", favoriteRoute);
 app.use("/rate", rateRoute);
 
-const PORT = process.env.PORT_ENV || 8282;
+const PORT = process.env.PORT || 8282;
 
 
 mongoose.connect(`mongodb+srv://lynk64te:${process.env.MONGODB_PASSWORD}@cluster0.zlxkken.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
