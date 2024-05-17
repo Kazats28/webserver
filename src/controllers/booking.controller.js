@@ -45,7 +45,6 @@ const newBooking = async (req, res, next) => {
   if (!booking) {
     return res.status(500).json({ message: "Unable to create a booking" });
   }
-
   return res.status(201).json({ booking });
 };
 
