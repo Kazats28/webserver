@@ -3,11 +3,31 @@ import bookingController from "../controllers/booking.controller.js";
 import crypto from "crypto";
 import querystring from "qs";
 import moment from "moment";
+import PayOS from "@payos/node";
+
+const payOS = new PayOS('e7a80dce-27ee-413f-bbbf-679f37db938c', 
+'50dfc744-c1c1-4161-8903-ec23bdb7afbd', 
+'b215539a6a14dc009aa0f218b7f369f72f7492bab4ea0dd12c61c0e68326e5c2');
+const frontEndUrl = "https://test-deploy-client-weld.vercel.app";
 const router = express.Router({});
 
 router.get("/:id", bookingController.getBookingById);
 router.post("/", bookingController.newBooking);
 router.delete("/:id", bookingController.deleteBooking);
+
+router.post('/create_payment', async (req, res) => {
+    const id = req.body.id;
+    const price = req.body.amount;
+    const order = {
+        amount: price,
+        description: '-MyShowz',
+        orderCode: 8,
+        returnUrl: `${frontEndUrl}/movie/${id}`,
+        cancelUrl: `${frontEndUrl}/movie/${id}`
+    };
+    const paymentUrl = await payOS.createPaymentLink(order);
+    res.json({ code: '00', data: paymentUrl.checkoutUrl });
+});
 
 router.post('/create_payment_url', async (req, res) => {
     let id = req.body.id;
@@ -24,7 +44,7 @@ router.post('/create_payment_url', async (req, res) => {
     let tmnCode = "DDPRNYWB";
     let secretKey = "151X15XI483XK6964TXO01Z3GXFLSB3J";
     let vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    let returnUrl = `https://test-deploy-client-weld.vercel.app/movie/${id}`;
+    let returnUrl = `${frontEndUrl}/movie/${id}`;
     let orderId = moment(date).format('DDHHmmss');
     let amount = req.body.amount;
     let bankCode = "VNPAY";
