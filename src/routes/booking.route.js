@@ -18,10 +18,14 @@ router.delete("/:id", bookingController.deleteBooking);
 router.post('/create_payment', async (req, res) => {
     const id = req.body.id;
     const price = req.body.amount;
+    process.env.TZ = 'Asia/Ho_Chi_Minh';
+    
+    let date = new Date();
+    let createDate = moment(date).format('YYYYMMDDHHmmss');
     const order = {
         amount: price,
         description: '-MyShowz',
-        orderCode: 8,
+        orderCode: createDate,
         returnUrl: `${frontEndUrl}/movie/${id}`,
         cancelUrl: `${frontEndUrl}/movie/${id}`
     };
@@ -45,7 +49,7 @@ router.post('/create_payment_url', async (req, res) => {
     let secretKey = "151X15XI483XK6964TXO01Z3GXFLSB3J";
     let vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     let returnUrl = `${frontEndUrl}/movie/${id}`;
-    let orderId = moment(date).format('DDHHmmss');
+    let orderId = moment(date).format('YYYYMMDDHHmmss');
     let amount = req.body.amount;
     let bankCode = "VNPAY";
     
