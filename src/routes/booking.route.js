@@ -21,11 +21,13 @@ router.post('/create_payment', async (req, res) => {
     process.env.TZ = 'Asia/Ho_Chi_Minh';
     
     let date = new Date();
-    let createDate = moment(date).format('YYYYMMDDHHmmss');
+    let createDate = moment(date).format('HHmmss');
+    let createDateInt = parseInt(createDate, 10) + Math.floor(Math.random() * 100000);
+
     const order = {
         amount: price,
         description: '-MyShowz',
-        orderCode: createDate,
+        orderCode: createDateInt,
         returnUrl: `${frontEndUrl}/movie/${id}`,
         cancelUrl: `${frontEndUrl}/movie/${id}`
     };
@@ -49,7 +51,7 @@ router.post('/create_payment_url', async (req, res) => {
     let secretKey = "151X15XI483XK6964TXO01Z3GXFLSB3J";
     let vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     let returnUrl = `${frontEndUrl}/movie/${id}`;
-    let orderId = moment(date).format('YYYYMMDDHHmmss');
+    let orderId = moment(date).format('DDHHmmss');
     let amount = req.body.amount;
     let bankCode = "VNPAY";
     
