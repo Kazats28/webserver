@@ -80,6 +80,17 @@ export const getBookingById = async (req, res) => {
   }
 };
 
+export const getTicketById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const booking = await Bookings.findById(id).populate("movie");;
+    return res.status(200).json({ booking });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Unexpected Error" });
+  }
+};
+
 export const deleteBooking = async (req, res) => {
   const { id } = req.params;
 

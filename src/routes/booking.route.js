@@ -3,6 +3,7 @@ import * as bookingController from "../controllers/booking.controller.js";
 
 const router = express.Router();
 
+router.get("/ticket/:id", bookingController.getTicketById);
 router.get("/:id", bookingController.getBookingById);
 router.post("/", bookingController.newBooking);
 router.delete("/:id", bookingController.deleteBooking);
