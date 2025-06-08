@@ -4,6 +4,7 @@ import responseHandler from "../handlers/response.handler.js";
 import Bookings from "../models/booking.model.js";
 import Favorites from "../models/favorite.model.js";
 import Rate from "../models/rate.model.js";
+import { OAuth2Client } from "google-auth-library";
 const signup = async (req, res) => {
   try {
     const { email, password, name } = req.body;
@@ -65,21 +66,29 @@ const signin = async (req, res) => {
 const updatePassword = async (req, res) => {
   try {
     const { password, newPassword } = req.body;
-
     const user = await userModel.findById(req.user.id).select("password id salt");
 
     if (!user) return responseHandler.unauthorize(res);
 
+    // Nếu user chưa từng đặt mật khẩu (đăng nhập Google), cho phép đặt luôn
+    if (!user.password) {
+      user.setPassword(newPassword);
+      await user.save();
+      return responseHandler.ok(res, { message: "Đặt mật khẩu thành công!" });
+    }
+
+    // Nếu đã có mật khẩu, kiểm tra mật khẩu cũ
     if (!user.validPassword(password)) return responseHandler.badrequest(res, "Sai mật khẩu.");
 
     user.setPassword(newPassword);
     await user.save();
 
-    responseHandler.ok(res);
+    responseHandler.ok(res, { message: "Đổi mật khẩu thành công!" });
   } catch {
     responseHandler.error(res);
   }
 };
+
 const getBookingsOfUser = async (req, res, next) => {
   const id = req.params.id;
   let bookings;
@@ -127,13 +136,53 @@ const getRatesOfUser = async (req, res, next) => {
 };
 const getInfo = async (req, res) => {
   try {
-    const user = await userModel.findById(req.user.id);
-
+    const user = await userModel.findById(req.user.id).select("+password");
+    console.log(user);
     if (!user) return responseHandler.notfound(res);
 
     responseHandler.ok(res, user);
   } catch {
     responseHandler.error(res);
+  }
+};
+const client = new OAuth2Client("924480311257-fg4vh5gmi206es2140hednb2mctmedig.apps.googleusercontent.com"); // Thay bằng Google Client ID của bạn
+
+const googleSignin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) return responseHandler.badrequest(res, "Thiếu credential từ Google.");
+
+    // Xác thực token Google
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: "924480311257-fg4vh5gmi206es2140hednb2mctmedig.apps.googleusercontent.com", // Thay bằng Google Client ID của bạn
+    });
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+
+    // Tìm hoặc tạo user
+    let user = await userModel.findOne({ email });
+    if (!user) {
+      user = new userModel({
+        email,
+        name: name || email
+      });
+      await user.save();
+    }
+
+    const token = jsonwebtoken.sign(
+      { data: user.id },
+      process.env.TOKEN_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    responseHandler.created(res, {
+      token,
+      ...user._doc,
+      id: user.id
+    });
+  } catch (err) {
+    responseHandler.badrequest(res, "Xác thực Google thất bại!");
   }
 };
 
@@ -144,5 +193,6 @@ export default {
   updatePassword,
   getBookingsOfUser,
   getFavoritesOfUser,
-  getRatesOfUser
+  getRatesOfUser,
+  googleSignin
 };

@@ -14,12 +14,12 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: false,
     select: false
   },
   salt: {
     type: String,
-    required: true,
+    required: false,
     select: false
   },
   bookings: [{ type: mongoose.Types.ObjectId, ref: "Booking" }],

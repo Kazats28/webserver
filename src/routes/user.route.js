@@ -10,25 +10,25 @@ const router = express.Router();
 router.post(
   "/signup",
   body("email")
-    .exists().withMessage("email is required")
+    .exists().withMessage("Hãy nhập email.")
     //.isLength({ min: 8 }).withMessage("username minimum 8 characters")
     .custom(async value => {
       const user = await userModel.findOne({ email: value });
-      if (user) return Promise.reject("email already used");
+      if (user) return Promise.reject("Email đã được đăng ký.");
     }),
   body("password")
-    .exists().withMessage("password is required")
-    .isLength({ min: 8 }).withMessage("password minimum 8 characters"),
+    .exists().withMessage("Hãy nhập mật khẩu.")
+    .isLength({ min: 8 }).withMessage("Mật khẩu phải có ít nhất 8 kí tự."),
   body("confirmPassword")
-    .exists().withMessage("confirmPassword is required")
-    .isLength({ min: 8 }).withMessage("confirmPassword minimum 8 characters")
+    .exists().withMessage("Hãy nhập mật khẩu xác nhận.")
+    .isLength({ min: 8 }).withMessage("Mật khẩu xác nhận phải có ít nhất 8 kí tự.")
     .custom((value, { req }) => {
-      if (value !== req.body.password) throw new Error("confirmPassword not match");
+      if (value !== req.body.password) throw new Error("Mật khẩu xác nhận không khớp.");
       return true;
     }),
   body("name")
-    .exists().withMessage("name is required")
-    .isLength({ min: 4 }).withMessage("name minimum 4 characters"),
+    .exists().withMessage("Hãy nhập tên người dùng.")
+    .isLength({ min: 4 }).withMessage("Tên người dùng phải có ít nhất 4 kí tự."),
   requestHandler.validate,
   userController.signup
 );
@@ -36,11 +36,11 @@ router.post(
 router.post(
   "/signin",
   body("email")
-    .exists().withMessage("email is required"),
+    .exists().withMessage("Hãy nhập email."),
     //.isLength({ min: 8 }).withMessage("username minimum 8 characters"),
   body("password")
-    .exists().withMessage("password is required")
-    .isLength({ min: 8 }).withMessage("password minimum 8 characters"),
+    .exists().withMessage("Hãy nhập mật khẩu.")
+    .isLength({ min: 8 }).withMessage("Mật khẩu phải có ít nhất 8 kí tự."),
   requestHandler.validate,
   userController.signin
 );
@@ -48,17 +48,14 @@ router.post(
 router.put(
   "/update-password",
   tokenMiddleware.auth,
-  body("password")
-    .exists().withMessage("password is required")
-    .isLength({ min: 8 }).withMessage("password minimum 8 characters"),
   body("newPassword")
-    .exists().withMessage("newPassword is required")
-    .isLength({ min: 8 }).withMessage("newPassword minimum 8 characters"),
+    .exists().withMessage("Hãy nhập mật khẩu mới.")
+    .isLength({ min: 8 }).withMessage("Mật khẩu mới phải có ít nhất 8 kí tự."),
   body("confirmNewPassword")
-    .exists().withMessage("confirmNewPassword is required")
-    .isLength({ min: 8 }).withMessage("confirmNewPassword minimum 8 characters")
+    .exists().withMessage("Hãy nhập mật khẩu xác nhận mới.")
+    .isLength({ min: 8 }).withMessage("Mật khẩu xác nhận mới phải có ít nhất 8 kí tự.")
     .custom((value, { req }) => {
-      if (value !== req.body.newPassword) throw new Error("confirmNewPassword not match");
+      if (value !== req.body.newPassword) throw new Error("Mật khẩu xác nhận mới không khớp.");
       return true;
     }),
   requestHandler.validate,
@@ -74,7 +71,7 @@ router.get(
 router.get("/bookings/:id", userController.getBookingsOfUser);
 router.get("/favorites/:id", userController.getFavoritesOfUser);
 router.get("/ratings/:id", userController.getRatesOfUser);
-
+router.post("/google-login", userController.googleSignin);
 router.put('/update-wallet/:id', async (req, res) => {
   try {
     const user = await userModel.findById(req.params.id);
